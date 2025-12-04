@@ -1,4 +1,5 @@
 using System.Collections;
+using System.Runtime.CompilerServices;
 using Unity.Collections.LowLevel.Unsafe;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -7,35 +8,46 @@ using UnityEngine.Rendering;
 public class CreatureFeature : MonoBehaviour, GeneHolder
 {
 
+    // Core Features
     [SerializeField] private new PolygonCollider2D collider;
     [SerializeField] private Rigidbody2D rigidBody;
+
+    // Rendering
     [SerializeField] private Mesh mesh;
     [SerializeField] private Vector2[] pathList;
     [SerializeField] private Vector2 pathCenter;
-    [SerializeField] public HingeJoint2D joint;
     [SerializeField] public Color colour;
-    [SerializeField] private int hingeIndex = -1;
     public string genes { get; set;} = "";
 
+    // Joints
+
+    [SerializeField] public HingeJoint2D joint;
+    [SerializeField] private int anchorIndex = -1;
+    [SerializeField] private int siblingAnchorIndex = -1;
+    [SerializeField] public CreatureFeature sibling;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
+    private void Start()
     {
+
         collider = gameObject.GetComponent<PolygonCollider2D>();
         rigidBody = gameObject.GetComponent<Rigidbody2D>();
 
         if (genes == "")
         {
             generatePath();
-        } else
-        {
-            generatePathWithGene();
         }
+        else
+        {
+            generateUsingGenes();
+        }
+        collider.SetPath(0, pathList);
 
         generateMesh();
     }
 
     // Update is called once per frame
-    void Update()
+    private void Update()
     {
         
     }
@@ -59,64 +71,114 @@ public class CreatureFeature : MonoBehaviour, GeneHolder
             if(i < size - 1) genes += ",";
 
         }
-        if (hingeIndex < 0) genes += ":-00";
-        else genes += string.Format(":{0:000}", hingeIndex);
-        Debug.Log(genes);
+
         pathCenter = new Vector2(xTotal / size, yTotal / size);
+        PolygonUtils.fixOrigin(pathList, pathCenter);
         pathList = PolygonUtils.sortClockwise(pathList, pathCenter);
-        collider.SetPath(0, pathList);
+
+        adjustJoints();
+
+        addAnchorGene(anchorIndex);
+        addAnchorGene(siblingAnchorIndex);
     }
 
-   private void generatePathWithGene()
+   private void generateUsingGenes()
     {
-        string[] components = genes.Split(':');
-        string[] coords = components[0].Split(',');
-        int joint = int.Parse(components[1]);
+        string[] elements = genes.Split(':'); // Split gene into specific components
+
+
+        generatePathFromGenes(elements[0]); // Generates list of numbers where every 2 represents a point.
+
+        int joint = int.Parse(elements[1]);
+        int siblingJoint = int.Parse(elements[2]);
+    }
+
+    private void adjustJoints()
+    {
+        if (sibling == null) return;
+        siblingAnchorIndex = sibling.getRandomPointIndex();
+        anchorIndex = getRandomPointIndex();
+
+        transform.localPosition = sibling.transform.localPosition + sibling.getPointAt(siblingAnchorIndex) - getPointAt(anchorIndex);
+
+        joint.anchor = getPointAt(anchorIndex);
+    }
+
+    public int getRandomPointIndex()
+    {
+        return Random.Range(0, pathList.Length - 1);
+    }
+    public Vector3 getPointAt(int index)
+    {
+        return pathList[index];
+    }
+
+    private void generatePathFromGenes(string pathGene)
+    {
+        string[] coords = pathGene.Split(',');
+
         pathList = new Vector2[coords.Length / 2];
 
-        for(int i = 0; i < coords.Length; i += 2)
+        for (int i = 0; i < coords.Length; i += 2)
         {
             float x = float.Parse(coords[i]) - 1;
             float y = float.Parse(coords[i + 1]) - 1;
             pathList[i / 2].x = x;
             pathList[i / 2].y = y;
         }
-        collider.SetPath(0, pathList);
+    }
+
+    private void addAnchorGene(int index)
+    {
+        if (index < 0) genes += ":-00";
+        else genes += string.Format(":{0:000}", index);
     }
 
     private void generateMesh()
     {
+        // Renderer setup
         MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
-        MeshFilter filter = this.gameObject.AddComponent<MeshFilter>();
-
         Material material = Object.Instantiate(Creature.defaultMaterial);
         material.color = colour;
         renderer.material = material;
+        // Filter setup
+        MeshFilter filter = this.gameObject.AddComponent<MeshFilter>();
         mesh = new Mesh();
-
         filter.mesh = mesh;
 
-        // Add the vertices and triangles to the mesh so it renders a polygon
+        // Populating mesh with vertices and triangles
+        mesh.vertices = createVertices();
+        mesh.triangles = createTriangles(); 
+ 
+        
+    }
 
+    private int[] createTriangles()
+    {
         int verticesLen = pathList.Length;
-
-        Vector3[] vertices = new Vector3[verticesLen];
-        int[] triangles = new int[(verticesLen-2) * 3];
+        int[] triangles = new int[(verticesLen - 2) * 3];
 
         for (int i = 0; i < verticesLen; i++)
         {
-            vertices[i] = pathList[i];
             int triIndex = i * 3;
-            if(triIndex < triangles.Length)
+            if (triIndex < triangles.Length)
             {
                 triangles[triIndex] = 0;
                 triangles[triIndex + 1] = i + 1;
                 triangles[triIndex + 2] = i + 2;
             }
         }
+        return triangles;
+    }
 
-        mesh.vertices = vertices;
-        mesh.triangles = triangles;
-        mesh.RecalculateBounds();
+    private Vector3[] createVertices()
+    {
+        int verticesLen = pathList.Length;
+        Vector3[] vertices = new Vector3[verticesLen];
+        for (int i = 0; i < verticesLen; i++)
+        {
+            vertices[i] = pathList[i];
+        }
+        return vertices;
     }
 }

@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -38,8 +39,25 @@ static public class PolygonUtils
             }
         }
 
-
         return smallest;
     }
 
+    public static Vector3[] vector2ListToVector3List(Vector2[] vector2List, float offset)
+    {
+        Vector3[] vector3List = new Vector3[vector2List.Length];
+        for (int i = 0; i < vector2List.Length; i++)
+        {
+            Vector2 currentElem = vector2List[i];
+            vector3List[i] = new Vector3(currentElem.x + offset, currentElem.y + offset);
+        }
+        return vector3List;
+    }
+
+    public static void fixOrigin(Vector2[] pathList, Vector2 center)
+    {
+        for(int i = 0; i < pathList.Length; i++)
+        {
+            pathList[i] = pathList[i] - center;
+        }
+    }
 }

@@ -10,7 +10,7 @@ public abstract class Breedable : MonoBehaviour
     {
         get;
         set;
-    }
+    } = "";
     public Breedable[] crossover(Breedable partner, CrossoverFunction crossoverFunction)
     {
         return crossoverFunction.Perform(this, partner);
