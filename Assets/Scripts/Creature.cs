@@ -10,16 +10,6 @@ public class Creature : Breedable
     [SerializeField] public Color colour = new Color(255, 0, 0);
     [SerializeField] public GameObject[] features;
 
-    public string dna { 
-        get {
-            return "";
-        } set
-        {
-            this.dna = value;
-        }
-    }
-
-
     public override void mutate()
     {
         throw new System.NotImplementedException();
@@ -29,13 +19,8 @@ public class Creature : Breedable
     {
         if (defaultMaterial == null) defaultMaterial = Resources.Load < Material >("Materials/DefaultCreatureMaterial");
 
-        features = new GameObject[Settings.creatureFeatures];
-        features[0] = generateFeature(0);
-
-        for (int i = 1; i < features.Length; i++)
-        {
-            features[i] = generateFeature(i, true, features[i - 1].GetComponent<CreatureFeature>());
-        }
+        generateFeatureList();
+        addMovementScripts();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -48,6 +33,17 @@ public class Creature : Breedable
     void Update()
     {
         Camera.main.transform.position = features[0].transform.position + Vector3.back;
+    }
+
+    private void generateFeatureList()
+    {
+        features = new GameObject[Settings.creatureFeatures];
+        features[0] = generateFeature(0);
+
+        for (int i = 1; i < features.Length; i++)
+        {
+            features[i] = generateFeature(i, true, features[Random.Range(0, i - 1)].GetComponent<CreatureFeature>());
+        }
     }
 
     private GameObject generateFeature(int id, bool hasJoint = false, CreatureFeature sibling = null)
@@ -69,5 +65,13 @@ public class Creature : Breedable
         featureObject.transform.SetParent(this.transform);
         featureObject.transform.position = Vector3.zero;
         return featureObject;
+    }
+
+    private void addMovementScripts()
+    {
+        foreach(GameObject creatureObject in features)
+        {
+            creatureObject.AddComponent<CreatureMovement>();
+        }
     }
 }
