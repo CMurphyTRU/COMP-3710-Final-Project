@@ -30,7 +30,6 @@ static public class PolygonUtils
         {
             Vector2 currentVector = vectorList[i];
             float currAngle = Mathf.Atan2(currentVector.y - point.y, currentVector.x - point.x);
-            Debug.Log("CurrAng: " + currAngle);
 
             if (currAngle < angle)
             {
@@ -39,8 +38,6 @@ static public class PolygonUtils
             }
         }
 
-        Debug.Log("FinalAng:" + angle);
-        Debug.Log("IndexOfSmallest:" + smallest);
 
         return smallest;
     }

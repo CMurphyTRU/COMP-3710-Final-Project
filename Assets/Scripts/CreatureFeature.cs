@@ -4,24 +4,33 @@ using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Rendering;
 
-public class CreatureFeature : MonoBehaviour
+public class CreatureFeature : MonoBehaviour, GeneHolder
 {
 
-    [SerializeField] private PolygonCollider2D collider;
+    [SerializeField] private new PolygonCollider2D collider;
     [SerializeField] private Rigidbody2D rigidBody;
     [SerializeField] private Mesh mesh;
-    [SerializeField] private Material material;
     [SerializeField] private Vector2[] pathList;
     [SerializeField] private Vector2 pathCenter;
-    [SerializeField] public string gene { get; set; }
+    [SerializeField] public HingeJoint2D joint;
+    [SerializeField] public Color colour;
+    [SerializeField] private int hingeIndex = -1;
+    public string genes { get; set;} = "";
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        collider = this.gameObject.AddComponent<PolygonCollider2D>();
-        rigidBody = this.gameObject.AddComponent<Rigidbody2D>();
+        collider = gameObject.GetComponent<PolygonCollider2D>();
+        rigidBody = gameObject.GetComponent<Rigidbody2D>();
 
-        generatePath();
+        if (genes == "")
+        {
+            generatePath();
+        } else
+        {
+            generatePathWithGene();
+        }
+
         generateMesh();
     }
 
@@ -30,7 +39,6 @@ public class CreatureFeature : MonoBehaviour
     {
         
     }
-
     private void generatePath()
     {
         int size = Settings.pathSize;
@@ -47,22 +55,46 @@ public class CreatureFeature : MonoBehaviour
             xTotal += x;
             yTotal += y;
 
+            genes += string.Format("{0:0.00},{0:0.00}", x + 1, y + 1);
+            if(i < size - 1) genes += ",";
+
         }
+        if (hingeIndex < 0) genes += ":-00";
+        else genes += string.Format(":{0:000}", hingeIndex);
+        Debug.Log(genes);
         pathCenter = new Vector2(xTotal / size, yTotal / size);
         pathList = PolygonUtils.sortClockwise(pathList, pathCenter);
         collider.SetPath(0, pathList);
     }
 
+   private void generatePathWithGene()
+    {
+        string[] components = genes.Split(':');
+        string[] coords = components[0].Split(',');
+        int joint = int.Parse(components[1]);
+        pathList = new Vector2[coords.Length / 2];
+
+        for(int i = 0; i < coords.Length; i += 2)
+        {
+            float x = float.Parse(coords[i]) - 1;
+            float y = float.Parse(coords[i + 1]) - 1;
+            pathList[i / 2].x = x;
+            pathList[i / 2].y = y;
+        }
+        collider.SetPath(0, pathList);
+    }
+
     private void generateMesh()
     {
-        MeshRenderer renderer = this.gameObject.AddComponent<MeshRenderer>();
+        MeshRenderer renderer = gameObject.AddComponent<MeshRenderer>();
         MeshFilter filter = this.gameObject.AddComponent<MeshFilter>();
 
+        Material material = Object.Instantiate(Creature.defaultMaterial);
+        material.color = colour;
+        renderer.material = material;
         mesh = new Mesh();
-        material.color = Color.red;
 
         filter.mesh = mesh;
-        renderer.material = material;
 
         // Add the vertices and triangles to the mesh so it renders a polygon
 
