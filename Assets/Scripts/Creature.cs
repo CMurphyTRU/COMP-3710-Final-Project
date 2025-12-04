@@ -30,7 +30,7 @@ public class Creature : Breedable
         if (defaultMaterial == null) defaultMaterial = Resources.Load < Material >("Materials/DefaultCreatureMaterial");
 
         features = new GameObject[Settings.creatureFeatures];
-        features[0] = generateFeature(0, false);
+        features[0] = generateFeature(0);
 
         for (int i = 1; i < features.Length; i++)
         {
@@ -41,16 +41,16 @@ public class Creature : Breedable
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        Camera.main.transform.position = features[0].transform.position + Vector3.back;
     }
 
-    private GameObject generateFeature(int id, bool hasJoint, CreatureFeature sibling = null)
+    private GameObject generateFeature(int id, bool hasJoint = false, CreatureFeature sibling = null)
     {
         GameObject featureObject = new GameObject("CreatureFeature" + id);
         CreatureFeature feature = featureObject.AddComponent<CreatureFeature>();
@@ -62,11 +62,12 @@ public class Creature : Breedable
         {
             HingeJoint2D joint = featureObject.AddComponent<HingeJoint2D>();
             joint.connectedBody = sibling.GetComponent<Rigidbody2D>();
+            feature.sibling = sibling;
 
             feature.joint = joint;
         }
-
-        featureObject.transform.position = new Vector3(id * 1, 0);
+        featureObject.transform.SetParent(this.transform);
+        featureObject.transform.position = Vector3.zero;
         return featureObject;
     }
 }
