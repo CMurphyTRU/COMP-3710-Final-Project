@@ -32,7 +32,7 @@ public class Creature : Breedable
     // Update is called once per frame
     void Update()
     {
-        Camera.main.transform.position = features[0].transform.position + Vector3.back;
+        //Camera.main.transform.position = features[0].transform.position + Vector3.back;
     }
 
     private void generateFeatureList()
