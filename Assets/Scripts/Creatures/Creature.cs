@@ -63,8 +63,8 @@ public class Creature : Breedable
 
             feature.joint = joint;
         }
-        featureObject.transform.SetParent(this.transform);
-        featureObject.transform.position = Vector3.zero;
+        featureObject.transform.SetParent(transform);
+        featureObject.transform.position = transform.position;
         return featureObject;
     }
 
