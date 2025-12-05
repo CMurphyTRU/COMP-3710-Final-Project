@@ -19,7 +19,7 @@ public class CreatureMovement : MonoBehaviour, GeneHolder
     private static float MIN_DELAY = 0.5f;
     private static float MAX_DELAY = 3f;
     private static float MIN_MAGNITUDE = 100f;
-    private static float MAX_MAGNITUDE = 500f;
+    private static float MAX_MAGNITUDE = 300f;
     private static Vector2 MAX_DIR = Vector2.one;
 
 

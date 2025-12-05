@@ -21,6 +21,7 @@ public class Creature : Breedable
 
         generateFeatureList();
         addMovementScripts();
+        addCameraAdjuster();
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
@@ -32,7 +33,7 @@ public class Creature : Breedable
     // Update is called once per frame
     void Update()
     {
-        //Camera.main.transform.position = features[0].transform.position + Vector3.back;
+        //transform.position = features[0].transform.position;
     }
 
     private void generateFeatureList()
@@ -73,5 +74,10 @@ public class Creature : Breedable
         {
             creatureObject.AddComponent<CreatureMovement>();
         }
+    }
+    private void addCameraAdjuster()
+    {
+       CameraAdjuster adjuster = features[0].AddComponent<CameraAdjuster>();
+        adjuster.followMe = false;
     }
 }

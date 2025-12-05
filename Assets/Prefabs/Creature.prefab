@@ -41,7 +41,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 5012077323566159993}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 71f04e9d71af78c4c80856aba59e87aa, type: 3}
+  m_Script: {fileID: 11500000, guid: 8f613b9f02ad30f4f8b84d475ea38d0f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Creature
   defaultMeshRenderer: {fileID: 0}
