@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Rendering.Universal.Internal;
 
-public class CreatureMovement : MonoBehaviour, GeneHolder
+public class CreatureMovement : MonoBehaviour
 {
     // Arguments
     [SerializeField] public float delay;
