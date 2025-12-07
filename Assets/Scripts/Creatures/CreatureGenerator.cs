@@ -1,24 +1,21 @@
 using Assets.Scripts.Creatures;
 using UnityEngine;
 
-[System.Serializable]
 
 [RequireComponent(typeof(MeshRenderer))]
 public class CreatureGenerator : MonoBehaviour
 {
     public CreatureDNA dna;
-    private GameObject[] shapes;
+    public GameObject[] shapes;
     private MeshRenderer meshRenderer;
+    public PhysicsMaterial2D physicsMaterial;
+    public Vector3 goalPosition;
 
     private void Awake()
     {
         meshRenderer = GetComponent<MeshRenderer>();
     }
 
-    private void Start()
-    {
-        generateFromDNA(new CreatureDNA());
-    }
     public void generateFromDNA(CreatureDNA dna)
     {
         this.dna = dna;
@@ -27,11 +24,6 @@ public class CreatureGenerator : MonoBehaviour
         joinShapes();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
     /*
      * generateShapes() :
      * Converts the CreatureShapeDNA in dna into a GameObject
@@ -45,6 +37,7 @@ public class CreatureGenerator : MonoBehaviour
             CreatureShapeDNA shapeDNA = dna.shapes[i];
             GameObject shape = new GameObject($"CreaturePart{i}");
             shape.transform.parent = transform;
+            shape.transform.position = transform.position;
 
             // Add Shape rendering
             MeshRenderer shapeRenderer = shape.AddComponent<MeshRenderer>();
@@ -59,7 +52,12 @@ public class CreatureGenerator : MonoBehaviour
             PolygonCollider2D collider = shape.AddComponent<PolygonCollider2D>();
             Rigidbody2D rigidbody = shape.AddComponent<Rigidbody2D>();
             collider.SetPath(0, shapeDNA.points);
+            shape.layer = gameObject.layer;
+            collider.sharedMaterial = physicsMaterial;
         }
+        CreatureEvaluator creatureEval = shapes[0].AddComponent<CreatureEvaluator>();
+        creatureEval.finishPosition = goalPosition;
+        
     }
 
     /*
@@ -127,12 +125,13 @@ public class CreatureGenerator : MonoBehaviour
             shape.transform.position = sibling.transform.position + vector2To3(siblingPoint) - vector2To3(anchorPoint);
             joint.anchor = anchorPoint;
             joint.connectedBody = sibling.GetComponent<Rigidbody2D>();
-            joint.enableCollision = true;
 
-            shape.GetComponent<Rigidbody2D>().AddForce(new Vector2(2, 2), ForceMode2D.Impulse);
+            CreatureShapeDNA shapeDNA = dna.shapes[i + 1];
+            shape.AddComponent<ShapeMovement>().EnableMovement(shapeDNA.movementDelay, shapeDNA.movementMagnitude, shapeDNA.direction);
             
         }
     }
+
     /*
      *  Util methods
      */

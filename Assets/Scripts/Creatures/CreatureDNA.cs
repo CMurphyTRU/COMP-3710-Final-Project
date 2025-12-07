@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.InputSystem.HID;
+using UnityEngine.Rendering;
 using ColorUtility = UnityEngine.ColorUtility;
 
 namespace Assets.Scripts.Creatures
@@ -8,8 +10,12 @@ namespace Assets.Scripts.Creatures
     [System.Serializable]
     public class CreatureDNA
     {
-        public static int ShapesPerCreature = 5;
-        public static int PointsPerShape = 5;
+        public static int ShapesPerCreature = 10;
+        public static int PointsPerShape = 7;
+        public static float CrossoverBias = 0.5f;
+        public static float MutationRate = 0.2f;
+
+        public float fitness = 0;
         public int shapeCount;
         public int pointsPerShape;
         public Color colour;
@@ -117,6 +123,53 @@ namespace Assets.Scripts.Creatures
 
             dnaString += $"{intListToDNAString(joints)}&{intListToDNAString(siblings)}";
             return dnaString;
+        }
+
+        private void mutate()
+        {
+            if(MathUtils.rollOdds(MutationRate)) colour = new Color(Mathf.Clamp(colour.r + Random.Range(-5, 5), 0, 255),
+                                                                    Mathf.Clamp(colour.g + Random.Range(-5, 5), 0, 255),
+                                                                    Mathf.Clamp(colour.b + Random.Range(-5, 5), 0, 255));
+
+            for (int i = 0; i < shapes.Length - 1; i++)
+            {
+                if (MathUtils.rollOdds(MutationRate)) joints[i] = Mathf.Clamp(joints[i] + Random.Range(-1, 1), 0, pointsPerShape - 1);
+                if (MathUtils.rollOdds(MutationRate)) siblings[i] = Mathf.Clamp(joints[i] + Random.Range(-1, 1), 0, i);
+            }
+
+        }
+
+        public static CreatureDNA Crossover(CreatureDNA mother, CreatureDNA father)
+        {
+            CreatureDNA child = new CreatureDNA(false);
+            int shapesPerCreature = mother.shapeCount;
+            child.shapeCount = shapesPerCreature;
+            child.pointsPerShape = mother.pointsPerShape;
+            child.shapes = new CreatureShapeDNA[shapesPerCreature];
+
+            child.colour = new Color(mother.colour.r * CrossoverBias + father.colour.r * (1 - CrossoverBias),
+                                     mother.colour.g * CrossoverBias + father.colour.g * (1 - CrossoverBias),
+                                     mother.colour.b * CrossoverBias + father.colour.b * (1 - CrossoverBias));
+
+            for (int i = 0; i < shapesPerCreature; i++)
+            {
+                child.shapes[i] = CreatureShapeDNA.Crossover(mother.shapes[i], father.shapes[i]);
+            }
+
+            child.joints = child.generateJoints();
+            child.siblings = child.generateSiblings();
+            
+            for(int i = 0; i < mother.joints.Length; i++)
+            {
+                child.joints[i] = MathUtils.rollOdds(CrossoverBias) ? mother.joints[i] : father.joints[i];
+            }
+            for(int i = 0; i < mother.siblings.Length; i++)
+            {
+                child.siblings[i] = MathUtils.rollOdds(CrossoverBias) ? mother.siblings[i] : father.siblings[i];
+            }
+            child.mutate();
+
+            return child;
         }
         
     }

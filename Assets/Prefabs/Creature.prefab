@@ -11,9 +11,9 @@ GameObject:
   - component: {fileID: 4720370904124012391}
   - component: {fileID: 7097009016637921875}
   - component: {fileID: 874447328619981402}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Creature
-  m_TagString: Untagged
+  m_TagString: isCreature
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -46,12 +46,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreatureGenerator
   dna:
+    fitness: 0
     shapeCount: 5
     pointsPerShape: 5
     colour: {r: 0, g: 0, b: 0, a: 0}
     shapes: []
     joints: 
     siblings: 
+  shapes: []
+  physicsMaterial: {fileID: 6200000, guid: b543ac26ae03adf4ea6ff18f2c1e402c, type: 2}
+  goalPosition: {x: 0, y: 0, z: 0}
 --- !u!23 &874447328619981402
 MeshRenderer:
   m_ObjectHideFlags: 0
