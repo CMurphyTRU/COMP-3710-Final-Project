@@ -1,0 +1,190 @@
+using Assets.Scripts.Creatures;
+using NUnit.Framework;
+using UnityEngine;
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.Rendering;
+
+public class CreaturePopulationManager : MonoBehaviour
+{
+    
+    public static int populationCount = 20;
+    public static bool keepBest = true;
+    public static int creaturesToKeep = Mathf.FloorToInt(populationCount * 0.5f);
+    public List<CreatureDNA> populationDNA = new();
+    public float[] cumulativeFitness;
+    public List<GameObject> creatures = new();
+
+    public int terrainAmount = 0;
+
+
+    [SerializeField] public TerrainDNA terrain;
+    [SerializeField] GameObject terrainPrefab;
+    [SerializeField] GameObject terrainObject;
+    [SerializeField] Vector3 goalPosition;
+
+    [SerializeField] private GameObject creaturePrefab;
+
+    private Camera mainCamera;
+    private float cameraScale = 30f;
+
+    private float generationTime = 10f;
+    private float timeElapsed = 0;
+    private int generationId = 1;
+    void Start()
+    {
+        prepareTerrain();
+        initialPopulation();
+        spawnCreatures();
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        timeElapsed += Time.deltaTime;
+
+        if (timeElapsed > generationTime)
+        {
+            timeElapsed = 0;
+
+            cumulativeFitness = evaluateFitness();
+            roulette(creaturesToKeep);
+            breed();
+
+            generationId++;
+            spawnCreatures();
+        }
+    }
+
+    private void prepareTerrain()
+    {
+        mainCamera = Camera.main;
+        mainCamera.orthographicSize = 30f;
+
+        for (int i = 0; i < terrainAmount; i++)
+        {
+            terrain = new TerrainDNA();
+            terrainObject = Instantiate(terrainPrefab);
+            terrainObject.GetComponent<TerrainGenerator>().GenerateFromDNA(terrain);
+            terrainObject.transform.position += new Vector3(i * 150, -cameraScale / mainCamera.aspect);
+            goalPosition = terrainObject.GetComponent<PolygonCollider2D>().bounds.max;
+        }
+    }
+
+    private void initialPopulation(string savedData = null)
+    {
+        if (savedData != null)
+        {
+            // Create from string provided and mutate until population filled
+            return;
+        }
+
+        for (int i = 0; i < populationCount; i++)
+        {
+            populationDNA.Add(new CreatureDNA());
+        }
+    }
+
+    private void clearCreatures()
+    {
+        foreach(GameObject creature in creatures)
+        {
+            Destroy(creature);
+        }
+        creatures.Clear();
+    }
+
+    private void spawnCreatures()
+    {
+        clearCreatures();
+
+        for (int i = 0; i < populationDNA.Count; i++)
+        {
+            GameObject createdCreature = Instantiate(creaturePrefab);
+            createdCreature.name = $"Creature{i}";
+            createdCreature.transform.position = new Vector3(-cameraScale, 2);
+            CreatureGenerator creatureGenerator = createdCreature.GetComponent<CreatureGenerator>();
+            creatureGenerator.goalPosition = goalPosition;
+            creatureGenerator.generateFromDNA(populationDNA[i]);
+
+            creatures.Add(createdCreature);
+        }
+    }
+
+    /*
+     * https://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedurehttps://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedure
+     */
+
+    private float[] evaluateFitness()
+    {
+        float[] cumulativeFitness = new float[populationCount];
+        int best = 0;
+        float highestFitness = 0;
+        for(int i = 0; i < populationCount; i++)
+        {
+            GameObject creature = creatures[i];
+            CreatureGenerator generator = creature.GetComponent<CreatureGenerator>();
+            CreatureEvaluator creatureEvaluator = generator.shapes[0].GetComponent<CreatureEvaluator>();
+            float creatureFitness = creatureEvaluator.getFitness(generationTime);
+            populationDNA[i].fitness = creatureFitness;
+
+            cumulativeFitness[i] = creatureFitness;
+            if (i > 0) cumulativeFitness[i] += cumulativeFitness[i - 1];
+
+            Debug.Log($"Creature{i} Fitness: {creatureFitness} and cumulative: {cumulativeFitness[i]}");
+
+            if (creatureFitness > highestFitness)
+            {
+                best = i;
+                highestFitness = creatureFitness;
+            }
+        }
+        System.Exception e;
+        populationDNA.TrySwap(best, 0, out e);
+        Debug.Log($"Total Fitness for generation {generationId}: {cumulativeFitness} with best {best}");
+        return cumulativeFitness;
+    }
+
+    private void roulette(int toKeep)
+    {
+        List<CreatureDNA> nextGeneration = new List<CreatureDNA>();
+        if (keepBest)
+        {
+            CreatureDNA best = populationDNA[0];
+            nextGeneration.Add(best);
+            toKeep--;
+        }
+
+        for (int i = 0; i < toKeep; i++)
+        {
+            float rouletteRoll = Random.Range(0, cumulativeFitness[populationCount - 1]);
+            int populationIndex = 0;
+            while (cumulativeFitness[populationIndex] < rouletteRoll)
+            {
+                populationIndex++;
+            }
+            nextGeneration.Add(populationDNA[populationIndex]);
+        }
+
+        populationDNA = nextGeneration;
+
+    }
+    private void breed()
+    {
+        int lastIndex = populationDNA.Count - 1;
+        while (populationDNA.Count < populationCount)
+        {
+            CreatureDNA mother = getRandomDNA(lastIndex);
+            CreatureDNA father = getRandomDNA(lastIndex);
+
+            CreatureDNA child = CreatureDNA.Crossover(mother, father);
+
+            populationDNA.Add(child);
+        }
+    }
+
+    private CreatureDNA getRandomDNA(int lastIndex)
+    {
+        return populationDNA[Random.Range(0, lastIndex)];
+    }
+}

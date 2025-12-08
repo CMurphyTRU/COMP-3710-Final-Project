@@ -11,8 +11,9 @@ GameObject:
   - component: {fileID: 4720370904124012391}
   - component: {fileID: 7097009016637921875}
   - component: {fileID: 874447328619981402}
-  m_Layer: 7
-  m_Name: Creature
+  - component: {fileID: 2105404572661342915}
+  m_Layer: 3
+  m_Name: Creature 1
   m_TagString: isCreature
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -104,3 +105,15 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &2105404572661342915
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6235817390948295574}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3e12cc47ab663404c841f6bc031e67af, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::TerrainEvaluator
