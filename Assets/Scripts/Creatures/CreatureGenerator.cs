@@ -48,6 +48,7 @@ public class CreatureGenerator : MonoBehaviour
             shapeFilter.mesh = mesh;
             shapes[i] = shape;
 
+
             // Add Shape physics components
             PolygonCollider2D collider = shape.AddComponent<PolygonCollider2D>();
             Rigidbody2D rigidbody = shape.AddComponent<Rigidbody2D>();

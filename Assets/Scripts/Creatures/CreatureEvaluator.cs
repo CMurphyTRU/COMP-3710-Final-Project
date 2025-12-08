@@ -15,9 +15,9 @@ public class CreatureEvaluator : MonoBehaviour
     public Vector2 startPosition;
     public Vector2 finishPosition;
 
-    public static float DisplacementFitnessWeight = 34;
-    public static float TotalDistanceFitnessWeight = 33;
-    public static float TimeToFinishFitnessWeight = 33;
+    public static float DisplacementFitnessWeight = 40;
+    public static float TotalDistanceFitnessWeight = 40;
+    public static float TimeToFinishFitnessWeight = 20;
     public static float TotalFitnessWeight = DisplacementFitnessWeight + TimeToFinishFitnessWeight + TotalDistanceFitnessWeight;
     void Start()
     {
@@ -30,34 +30,33 @@ public class CreatureEvaluator : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        Debug.Log(collision.gameObject.name);
         timeToFinish = timeAlive;
-        currentDisplacementFromFinish = 0;
+        currentDisplacementFromFinish = 0.5f;
         hasFinished = true;
     }
 
-    // Update is called once per frame
     void Update()
     {
         this.timeAlive += Time.deltaTime;
-        Vector2 currentPosition = transform.position;
-        float distanceFromLast = Vector2.Distance(lastLocation, currentPosition);
-        this.totalDistance += distanceFromLast;
-        this.lastLocation = currentPosition;
 
-        this.currentDisplacementFromFinish = finishPosition.x - currentPosition.x;
+        if (!hasFinished)
+        {
+            Vector2 currentPosition = transform.position;
+            float distanceFromLast = Vector2.Distance(lastLocation, currentPosition);
+            this.totalDistance += distanceFromLast;
+            this.lastLocation = currentPosition;
+            this.currentDisplacementFromFinish = finishPosition.x - currentPosition.x;
+        }
     }
 
     public float getFitness(float generationTime)
     {
-        Debug.Log($"{totalDistance}");
         if (!hasFinished) timeToFinish = generationTime;
         
         float timeToFinishScore = (generationTime / timeToFinish) * (TimeToFinishFitnessWeight / TotalDistanceFitnessWeight);
         float totalDistanceScore = (1 / totalDistance * 10) * (TotalDistanceFitnessWeight / TotalDistanceFitnessWeight);
         float displacementFromFinishScore = (1 / ((currentDisplacementFromFinish) / (finishPosition.x - startPosition.x))) * (DisplacementFitnessWeight / TotalDistanceFitnessWeight);
 
-        Debug.Log($"{timeToFinishScore} + {totalDistanceScore} + {displacementFromFinishScore}");
         
         return timeToFinishScore + totalDistanceScore + displacementFromFinishScore;
     }
