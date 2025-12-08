@@ -9,6 +9,7 @@ public class CreaturePopulationManager : MonoBehaviour
 {
     public static int populationCount = 20;
     public static bool keepBest = true;
+    public int bestIndex;
     public static int creaturesToKeep = Mathf.FloorToInt(populationCount * 0.5f);
     public List<CreatureDNA> populationDNA = new();
     public float[] cumulativeFitness;
@@ -21,9 +22,10 @@ public class CreaturePopulationManager : MonoBehaviour
     [SerializeField] Vector3 goalPosition;
 
     [SerializeField] private GameObject creaturePrefab;
+    [SerializeField] private GameObject flagPrefab;
 
     private Camera mainCamera;
-    private float cameraScale = 30f;
+    private float cameraScale = CameraViewer.defaultCameraScale;
 
     private float generationTime = 10f;
     private float timeElapsed = 0;
@@ -33,6 +35,8 @@ public class CreaturePopulationManager : MonoBehaviour
         prepareTerrain();
         initialPopulation();
         spawnCreatures();
+
+        Debug.Log($"population = {populationCount}, Shapes Per Creature = {populationDNA[0].shapeCount}, Points Per Shape = {populationDNA[0].pointsPerShape}");
     }
 
     // Update is called once per frame
@@ -62,6 +66,8 @@ public class CreaturePopulationManager : MonoBehaviour
         terrainObject.GetComponent<TerrainGenerator>().GenerateFromDNA(terrain);
         terrainObject.transform.position += new Vector3(0, -cameraScale / mainCamera.aspect);
         goalPosition = terrainObject.GetComponent<PolygonCollider2D>().bounds.max;
+        GameObject flag = Instantiate(flagPrefab);
+        flag.transform.position = goalPosition - new Vector3(2, 0);
     }
 
     private void initialPopulation(string savedData = null)
@@ -113,7 +119,9 @@ public class CreaturePopulationManager : MonoBehaviour
         float[] cumulativeFitness = new float[populationCount];
         int best = 0;
         float highestFitness = 0;
-        for(int i = 0; i < populationCount; i++)
+        int totalFinished = 0;
+
+        for (int i = 0; i < populationCount; i++)
         {
             GameObject creature = creatures[i];
             CreatureGenerator generator = creature.GetComponent<CreatureGenerator>();
@@ -124,17 +132,23 @@ public class CreaturePopulationManager : MonoBehaviour
             cumulativeFitness[i] = creatureFitness;
             if (i > 0) cumulativeFitness[i] += cumulativeFitness[i - 1];
 
-            Debug.Log($"Creature{i} Fitness: {creatureFitness} and cumulative: {cumulativeFitness[i]}");
 
             if (creatureFitness > highestFitness)
             {
                 best = i;
                 highestFitness = creatureFitness;
             }
+
+            if(creatureEvaluator.hasFinished)
+            {
+                totalFinished++;
+            }
         }
-        System.Exception e;
-        populationDNA.TrySwap(best, 0, out e);
-        Debug.Log($"Total Fitness for generation {generationId}: {cumulativeFitness} with best {best}");
+
+        bestIndex = best;
+
+        Debug.Log($"Generation {generationId}: {cumulativeFitness[populationCount - 1]},  totalFinished: {totalFinished}");
+        Debug.Log($"Best creature: creature{best}: fitness: {populationDNA[0].fitness}, dna: {populationDNA[0].ToString()}");
         return cumulativeFitness;
     }
 
@@ -143,7 +157,7 @@ public class CreaturePopulationManager : MonoBehaviour
         List<CreatureDNA> nextGeneration = new List<CreatureDNA>();
         if (keepBest)
         {
-            CreatureDNA best = populationDNA[0];
+            CreatureDNA best = populationDNA[bestIndex];
             nextGeneration.Add(best);
             toKeep--;
         }
