@@ -43,44 +43,64 @@ public class TerrainDNA
     public void Mutate(float mutationRate)
     {
         if (Random.value < mutationRate)
-        {
-            maxHeightDelta += Random.Range(-0.2f, 0.2f);
-        }
+            maxHeightDelta += Random.Range(-0.5f, 0.5f);
 
         if (Random.value < mutationRate)
-        {
-            smoothness += Random.Range(-0.1f, 0.1f);
-        }
+            smoothness += Random.Range(-0.2f, 0.2f);
 
         for (int i = 0; i < relativeHeights.Length; i++)
         {
             if (Random.value < mutationRate)
-            {
-                relativeHeights[i] += Random.Range(-0.2f, 0.2f);
-            }
+                relativeHeights[i] += Random.Range(-0.5f, 0.5f);
         }
 
-        maxHeightDelta = Mathf.Clamp(maxHeightDelta, 0.05f, 3f);
-        smoothness = Mathf.Clamp(smoothness, 0.05f, 3f);
+        maxHeightDelta = Mathf.Clamp(maxHeightDelta, 0.1f, 3f);
+        smoothness = Mathf.Clamp(smoothness, 0.05f, 2f);
     }
+
 
     public static TerrainDNA Crossover(TerrainDNA A, TerrainDNA B)
     {
         TerrainDNA child = new TerrainDNA(false);
 
+        
         child.pointCount = (Random.value < 0.5f) ? A.pointCount : B.pointCount;
+
         child.maxHeightDelta = (Random.value < 0.5f) ? A.maxHeightDelta : B.maxHeightDelta;
         child.smoothness = (Random.value < 0.5f) ? A.smoothness : B.smoothness;
         child.groundColor = (Random.value < 0.5f) ? A.groundColor : B.groundColor;
 
-        int len = Mathf.Min(A.relativeHeights.Length, B.relativeHeights.Length);
-        child.relativeHeights = new float[len];
+        child.relativeHeights = new float[child.pointCount];
 
-        for (int i = 0; i < len; i++)
+        for (int i = 0; i < child.pointCount; i++)
         {
-            child.relativeHeights[i] = (Random.value < 0.5f) ? A.relativeHeights[i] : B.relativeHeights[i];
+            
+            float aH = A.relativeHeights[i % A.relativeHeights.Length];
+            float bH = B.relativeHeights[i % B.relativeHeights.Length];
+
+            child.relativeHeights[i] = (Random.value < 0.5f) ? aH : bH;
         }
 
         return child;
     }
+
+
+    public TerrainDNA CloneRandomized()
+    {
+        TerrainDNA d = new TerrainDNA();
+
+        d.pointCount = this.pointCount;
+        d.groundColor = this.groundColor;
+        d.smoothness = this.smoothness;
+
+        d.relativeHeights = new float[pointCount];
+
+        for (int i = 0; i < pointCount; i++)
+        {
+            d.relativeHeights[i] = Random.Range(-2f, 2f);
+        }
+
+        return d;
+    }
+
 }
