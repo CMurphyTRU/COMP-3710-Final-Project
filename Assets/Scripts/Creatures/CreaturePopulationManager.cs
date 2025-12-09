@@ -25,7 +25,7 @@ public class CreaturePopulationManager : MonoBehaviour
     [SerializeField] private GameObject flagPrefab;
 
     private Camera mainCamera;
-    private float cameraScale = CameraViewer.defaultCameraScale;
+    private float cameraScale = 30f;
 
     private float generationTime = 10f;
     private float timeElapsed = 0;
@@ -84,6 +84,7 @@ public class CreaturePopulationManager : MonoBehaviour
         }
     }
 
+    // Empties creature game objects
     private void clearCreatures()
     {
         foreach(GameObject creature in creatures)
@@ -93,6 +94,7 @@ public class CreaturePopulationManager : MonoBehaviour
         creatures.Clear();
     }
 
+    // Spawns the creature game objects based on the population dna list
     private void spawnCreatures()
     {
         clearCreatures();
@@ -111,9 +113,9 @@ public class CreaturePopulationManager : MonoBehaviour
     }
 
     /*
-     * https://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedure
+     * Determines the score of every creature and stores their fitness and also determines the highest one.
+     * Generates a list of cumulative scores for roulette selection.
      */
-
     private float[] evaluateFitness()
     {
         float[] cumulativeFitness = new float[populationCount];
@@ -152,6 +154,9 @@ public class CreaturePopulationManager : MonoBehaviour
         return cumulativeFitness;
     }
 
+    /*
+     * https://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedure
+     */
     private void roulette(int toKeep)
     {
         List<CreatureDNA> nextGeneration = new List<CreatureDNA>();

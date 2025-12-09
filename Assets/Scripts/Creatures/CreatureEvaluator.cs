@@ -5,19 +5,22 @@ using UnityEngine.Rendering.Universal.Internal;
 [System.Serializable]
 public class CreatureEvaluator : MonoBehaviour
 {
+    // Parameters for fitness evaluation
     public float totalDistance;
     public float currentDisplacementFromFinish;
     public float timeToFinish;
     public float timeAlive;
     public bool hasFinished;
 
+    // Location Info
     private Vector2 lastLocation;
     public Vector2 startPosition;
     public Vector2 finishPosition;
 
-    public static float DisplacementFitnessWeight = 10;
-    public static float TotalDistanceFitnessWeight = 35;
-    public static float TimeToFinishFitnessWeight = 55;
+    // Weights for Fitnesses
+    public static float DisplacementFitnessWeight = 40;
+    public static float TotalDistanceFitnessWeight = 20;
+    public static float TimeToFinishFitnessWeight = 40;
     public static float TotalFitnessWeight = DisplacementFitnessWeight + TimeToFinishFitnessWeight + TotalDistanceFitnessWeight;
     void Start()
     {
@@ -28,10 +31,13 @@ public class CreatureEvaluator : MonoBehaviour
         lastLocation = startPosition;
     }
 
+    /*
+     * Signifies that the creature has reached the end of the terrain and to pause their evaluation variables
+     */
     private void OnTriggerEnter2D(Collider2D collision)
     {
         timeToFinish = timeAlive;
-        currentDisplacementFromFinish = 0.5f;
+        currentDisplacementFromFinish = 1;
         hasFinished = true;
     }
 
