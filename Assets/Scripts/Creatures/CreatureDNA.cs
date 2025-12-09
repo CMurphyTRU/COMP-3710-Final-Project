@@ -10,8 +10,8 @@ namespace Assets.Scripts.Creatures
     [System.Serializable]
     public class CreatureDNA
     {
-        public static int ShapesPerCreature = 4;
-        public static int PointsPerShape = 20;
+        public static int ShapesPerCreature = 10;
+        public static int PointsPerShape = 10;
         public static float CrossoverBias = 0.5f;
         public static float MutationRate = 0.2f;
 
