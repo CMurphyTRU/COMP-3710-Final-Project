@@ -5,15 +5,15 @@ using UnityEngine;
 [RequireComponent(typeof(PolygonCollider2D))]
 public class TerrainGenerator : MonoBehaviour
 {
-    public TerrainDNA dna;
-    private MeshFilter meshFilter;
-    private MeshRenderer meshRenderer;
-    private PolygonCollider2D collider2D;
+    public TerrainDNA dna;                        // DNA controlling terrain shape
+    private MeshFilter meshFilter;                // mesh component
+    private MeshRenderer meshRenderer;            // renderer for the mesh
+    private PolygonCollider2D collider2D;         // collider outlining the terrain
 
     [HideInInspector]
-    public float pointSpacing;
+    public float pointSpacing;                    // spacing between each terrain point
 
-    [SerializeField] private float bottomY = -10f;
+    [SerializeField] private float bottomY = -10f; // bottom of terrain mesh/collider
 
     private void Awake()
     {
@@ -26,19 +26,24 @@ public class TerrainGenerator : MonoBehaviour
     {
         this.dna = dna;
 
+        // calculate spacing based on camera width
         Camera cam = Camera.main;
         float visibleWidth = cam.orthographicSize * 2f * cam.aspect;
         pointSpacing = visibleWidth / (dna.pointCount - 1);
 
+        // generate top surface of terrain
         Vector2[] surfacePoints = GeneratePoints();
 
+        // build mesh from points
         Mesh mesh = BuildMesh(surfacePoints);
         meshFilter.mesh = mesh;
 
+        // build collider outline
         Vector2[] colliderPath = BuildColliderPath(surfacePoints);
         collider2D.pathCount = 1;
         collider2D.SetPath(0, colliderPath);
 
+        // apply terrain color
         meshRenderer.material.color = dna.groundColor;
     }
 
@@ -49,6 +54,7 @@ public class TerrainGenerator : MonoBehaviour
         float currentY = 0f;
         float halfWidth = (dna.pointCount - 1) * pointSpacing * 0.5f;
 
+        // accumulate height changes from DNA to form terrain surface
         for (int i = 0; i < dna.pointCount; i++)
         {
             currentY += dna.relativeHeights[i];
@@ -67,16 +73,17 @@ public class TerrainGenerator : MonoBehaviour
 
         int n = points.Length;
 
-        
+        // create top and bottom vertices
         Vector3[] verts = new Vector3[n * 2];
         int[] tris = new int[(n - 1) * 6];
 
         for (int i = 0; i < n; i++)
         {
-            verts[i] = new Vector3(points[i].x, points[i].y, 0f);          
-            verts[n + i] = new Vector3(points[i].x, bottomY, 0f);          
+            verts[i] = new Vector3(points[i].x, points[i].y, 0f);      // top vertex
+            verts[n + i] = new Vector3(points[i].x, bottomY, 0f);     // bottom vertex
         }
 
+        // build triangles between top and bottom vertices
         int t = 0;
         for (int i = 0; i < n - 1; i++)
         {
@@ -107,13 +114,13 @@ public class TerrainGenerator : MonoBehaviour
         int n = points.Length;
         Vector2[] path = new Vector2[n * 2];
 
-        
+        // top surface of collider
         for (int i = 0; i < n; i++)
         {
             path[i] = points[i];
         }
 
-        
+        // bottom edge going back in reverse, forming a closed shape
         for (int i = 0; i < n; i++)
         {
             int topIndex = n - 1 - i;
@@ -125,6 +132,7 @@ public class TerrainGenerator : MonoBehaviour
 
     public void SetAlpha(float alpha)
     {
+        // adjust the transparency of the terrain material
         Color c = meshRenderer.material.color;
         c.a = alpha;
         meshRenderer.material.color = c;
