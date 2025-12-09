@@ -11,6 +11,9 @@ namespace Assets.Scripts.Creatures
         public float directionAngle;
         public Vector2 direction;
 
+        /*
+         * Movement settings
+         */
         public static float MinimumDelay = 0.5f;
         public static float MaximumDelay = 2f;
         public static float MinimumMagnitude = 2f;
@@ -23,6 +26,7 @@ namespace Assets.Scripts.Creatures
                 Randomize(size);
             }
         }
+        // Takes a toString version of the dna and converts it into an object
         public CreatureShapeDNA(string dnaString)
         {
             string[] genes = dnaString.Split(':');

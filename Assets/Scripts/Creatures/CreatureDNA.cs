@@ -10,6 +10,8 @@ namespace Assets.Scripts.Creatures
     [System.Serializable]
     public class CreatureDNA
     {
+
+        // Creature DNA Settings
         public static int ShapesPerCreature = 10;
         public static int PointsPerShape = 10;
         public static float CrossoverBias = 0.5f;
@@ -19,7 +21,6 @@ namespace Assets.Scripts.Creatures
         public int shapeCount;
         public int pointsPerShape;
         public Color colour;
-
         public CreatureShapeDNA[] shapes;
         public int[] joints;
         public int[] siblings;
@@ -31,7 +32,7 @@ namespace Assets.Scripts.Creatures
                 Randomize();
             }
         }
-
+        // Takes a toString version of the dna and converts it into an object
         public CreatureDNA(string dnaString)
         {
             string[] genes = dnaString.Split('&');
@@ -52,6 +53,7 @@ namespace Assets.Scripts.Creatures
             siblings = dnaStringToIntList(genes[siblingOffset]);
         }
 
+        // Randomizes the parameters for creature DNA
         private void Randomize()
         {
             shapeCount = ShapesPerCreature;
@@ -63,6 +65,7 @@ namespace Assets.Scripts.Creatures
           
         }
 
+        // Generates the shapes as dna
         private CreatureShapeDNA[] generateShapes(int length)
         {
             CreatureShapeDNA[] result = new CreatureShapeDNA[length];
@@ -73,6 +76,7 @@ namespace Assets.Scripts.Creatures
             return result;
         }
 
+        // A list of indexes corresponding to the point within a shape for which to place joints 
         private int[] generateJoints()
         {
             int[] result = new int[(shapeCount - 1) * 2];
@@ -83,6 +87,7 @@ namespace Assets.Scripts.Creatures
             return result;
         }
 
+        // A list of indexes corresponding to the shape another shape is joined to.
         private int[] generateSiblings()
         {
             int[] result = new int[shapeCount - 1];
@@ -93,6 +98,7 @@ namespace Assets.Scripts.Creatures
             return result;
         }
 
+        // Utility function to convert int lists to a string used in toString
         private string intListToDNAString(int[] list)
         {
             string result = string.Empty;
@@ -104,6 +110,7 @@ namespace Assets.Scripts.Creatures
             return result;
         }
         
+        // Takes a string and reverts it back to int[]
         private int[] dnaStringToIntList(string dnaString)
         {
             string[] genes = dnaString.Split(',');
@@ -115,7 +122,7 @@ namespace Assets.Scripts.Creatures
             }
             return result;
         }
-
+        // Allows for saving of dna
         public override string ToString()
         {
             string dnaString = $"{colour.ToHexString()}&{shapeCount}&{pointsPerShape}&";
@@ -139,7 +146,12 @@ namespace Assets.Scripts.Creatures
             }
 
         }
-
+        
+        /*
+         * 
+         * A uniform crossover function that produces a single child from two partners.
+         * 
+         */
         public static CreatureDNA Crossover(CreatureDNA mother, CreatureDNA father)
         {
             CreatureDNA child = new CreatureDNA(false);

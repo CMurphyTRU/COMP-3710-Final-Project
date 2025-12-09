@@ -74,6 +74,10 @@ public class CreatureGenerator : MonoBehaviour
         mesh.triangles = createTriangles(pathList);
         return mesh;
     }
+
+    /*
+     *  Takes points and generates triples of indexes for mesh creation
+     */
     private int[] createTriangles(Vector2[] pathList)
     {
         int verticesLen = pathList.Length;
@@ -113,15 +117,17 @@ public class CreatureGenerator : MonoBehaviour
         {
             GameObject shape = shapes[i+1];
             GameObject sibling = shapes[dna.siblings[i]];
+            // Gets the list of points for each shape
             Vector2[] shapePoints = shape.GetComponent<PolygonCollider2D>().GetPath(0);
             Vector2[] siblingPoints = sibling.GetComponent<PolygonCollider2D>().GetPath(0);
 
+            // Determines the point of connection
             int jointIndex = dna.joints[i * 2];
             int siblingJointIndex = dna.joints[i * 2 + 1];
-
             Vector2 anchorPoint = shapePoints[jointIndex];
             Vector2 siblingPoint = siblingPoints[siblingJointIndex];
 
+            // Create a hinge joint to connect them
             HingeJoint2D joint = shape.AddComponent<HingeJoint2D>();
             shape.transform.position = sibling.transform.position + vector2To3(siblingPoint) - vector2To3(anchorPoint);
             joint.anchor = anchorPoint;

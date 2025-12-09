@@ -6,6 +6,11 @@ using UnityEngine;
 
 static public class PolygonUtils
 {
+
+    /*
+     * Uses atan2 to sort a list of points around the center based on angles
+     * in the clockwise direction.
+     */
     public static Vector2[] sortClockwise(Vector2[] path, Vector2 center)
     {
         Vector2[] result = new Vector2[path.Length];
@@ -21,6 +26,10 @@ static public class PolygonUtils
 
         return result;
     }
+
+    /*
+     * Uses atan2 to determine the smallest angle from the list relative to point
+     */
 
     private static int getSmallestAngleFromPoint(Vector2 point, List<Vector2> vectorList)
     {
@@ -53,6 +62,7 @@ static public class PolygonUtils
         return vector3List;
     }
 
+    // Offsets every point in a vector2 array by the center so that it is centered around it.
     public static void fixOrigin(Vector2[] pathList, Vector2 center)
     {
         for(int i = 0; i < pathList.Length; i++)
