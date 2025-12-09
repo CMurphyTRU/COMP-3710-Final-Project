@@ -111,7 +111,7 @@ public class CreaturePopulationManager : MonoBehaviour
     }
 
     /*
-     * https://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedurehttps://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedure
+     * https://stackoverflow.com/questions/10765660/roulette-wheel-selection-procedure
      */
 
     private float[] evaluateFitness()
@@ -148,7 +148,7 @@ public class CreaturePopulationManager : MonoBehaviour
         bestIndex = best;
 
         Debug.Log($"Generation {generationId}: {cumulativeFitness[populationCount - 1]},  totalFinished: {totalFinished}");
-        Debug.Log($"Best creature: creature{best}: fitness: {populationDNA[0].fitness}, dna: {populationDNA[0].ToString()}");
+        Debug.Log($"Best creature: creature{best}: fitness: {populationDNA[bestIndex].fitness}, dna: {populationDNA[bestIndex].ToString()}");
         return cumulativeFitness;
     }
 

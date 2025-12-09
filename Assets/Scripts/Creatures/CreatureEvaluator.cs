@@ -15,9 +15,9 @@ public class CreatureEvaluator : MonoBehaviour
     public Vector2 startPosition;
     public Vector2 finishPosition;
 
-    public static float DisplacementFitnessWeight = 40;
-    public static float TotalDistanceFitnessWeight = 40;
-    public static float TimeToFinishFitnessWeight = 20;
+    public static float DisplacementFitnessWeight = 10;
+    public static float TotalDistanceFitnessWeight = 35;
+    public static float TimeToFinishFitnessWeight = 55;
     public static float TotalFitnessWeight = DisplacementFitnessWeight + TimeToFinishFitnessWeight + TotalDistanceFitnessWeight;
     void Start()
     {
@@ -35,7 +35,7 @@ public class CreatureEvaluator : MonoBehaviour
         hasFinished = true;
     }
 
-    void Update()
+    void FixedUpdate()
     {
         this.timeAlive += Time.deltaTime;
 

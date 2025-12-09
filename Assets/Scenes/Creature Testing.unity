@@ -148,6 +148,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4e104a72d46d7284e8775621d6966919, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CreaturePopulationManager
+  bestIndex: 0
   populationDNA: []
   cumulativeFitness: []
   creatures: []
