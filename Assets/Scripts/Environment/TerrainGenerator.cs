@@ -1,4 +1,3 @@
-using UnityEditor.ShortcutManagement;
 using UnityEngine;
 
 [RequireComponent(typeof(MeshFilter))]
@@ -14,6 +13,8 @@ public class TerrainGenerator : MonoBehaviour
     [HideInInspector]
     public float pointSpacing;
 
+    [SerializeField] private float bottomY = -10f;
+
     private void Awake()
     {
         meshFilter = GetComponent<MeshFilter>();
@@ -24,74 +25,73 @@ public class TerrainGenerator : MonoBehaviour
     public void GenerateFromDNA(TerrainDNA dna)
     {
         this.dna = dna;
-        
+
         Camera cam = Camera.main;
         float visibleWidth = cam.orthographicSize * 2f * cam.aspect;
         pointSpacing = visibleWidth / (dna.pointCount - 1);
 
-        
+        Vector2[] surfacePoints = GeneratePoints();
 
-        Vector2[] points = GeneratePoints();
-        Mesh mesh = BuildMesh(points);
-
+        Mesh mesh = BuildMesh(surfacePoints);
         meshFilter.mesh = mesh;
 
+        Vector2[] colliderPath = BuildColliderPath(surfacePoints);
         collider2D.pathCount = 1;
-        collider2D.SetPath(0, BuildColliderPath(points));
+        collider2D.SetPath(0, colliderPath);
 
         meshRenderer.material.color = dna.groundColor;
-
-        
     }
 
     private Vector2[] GeneratePoints()
     {
-    Vector2[] pts = new Vector2[dna.pointCount];
+        Vector2[] pts = new Vector2[dna.pointCount];
 
-    float currentY = 0f;
-    float halfWidth = (dna.pointCount - 1) * pointSpacing * 0.5f;
+        float currentY = 0f;
+        float halfWidth = (dna.pointCount - 1) * pointSpacing * 0.5f;
 
-    for (int i = 0; i < dna.pointCount; i++)
-    {
-        currentY += dna.relativeHeights[i];
-        currentY = Mathf.Lerp(currentY, 0, dna.smoothness * 0.01f);
+        for (int i = 0; i < dna.pointCount; i++)
+        {
+            currentY += dna.relativeHeights[i];
+            currentY = Mathf.Lerp(currentY, 0f, dna.smoothness * 0.01f);
 
-        float x = i * pointSpacing - halfWidth;
+            float x = i * pointSpacing - halfWidth;
+            pts[i] = new Vector2(x, currentY);
+        }
 
-        pts[i] = new Vector2(x, currentY);
+        return pts;
     }
-
-    return pts;
-    }
-
 
     private Mesh BuildMesh(Vector2[] points)
     {
         Mesh mesh = new Mesh();
 
-        int vertCount = points.Length + 2;
+        int n = points.Length;
 
-        Vector3[] verts = new Vector3[vertCount];
-        int[] tris = new int[(points.Length - 1) * 6];
+        
+        Vector3[] verts = new Vector3[n * 2];
+        int[] tris = new int[(n - 1) * 6];
 
-        for (int i = 0; i < points.Length; i++)
+        for (int i = 0; i < n; i++)
         {
-            verts[i] = points[i];
+            verts[i] = new Vector3(points[i].x, points[i].y, 0f);          
+            verts[n + i] = new Vector3(points[i].x, bottomY, 0f);          
         }
 
-        verts[points.Length] = new Vector3(points[0].x, -10, 0);
-        verts[points.Length + 1] = new Vector3(points[points.Length - 1].x, -10, 0);
-
         int t = 0;
-        for (int i = 0; i < points.Length - 1; i++)
+        for (int i = 0; i < n - 1; i++)
         {
-            tris[t++] = i;
-            tris[t++] = i + 1;
-            tris[t++] = points.Length;
+            int tl = i;
+            int tr = i + 1;
+            int bl = n + i;
+            int br = n + i + 1;
 
-            tris[t++] = i + 1;
-            tris[t++] = points.Length + 1;
-            tris[t++] = points.Length;
+            tris[t++] = tl;
+            tris[t++] = tr;
+            tris[t++] = bl;
+
+            tris[t++] = tr;
+            tris[t++] = br;
+            tris[t++] = bl;
         }
 
         mesh.vertices = verts;
@@ -100,20 +100,25 @@ public class TerrainGenerator : MonoBehaviour
         mesh.RecalculateBounds();
 
         return mesh;
-
     }
 
     private Vector2[] BuildColliderPath(Vector2[] points)
     {
-        Vector2[] path = new Vector2[points.Length + 2];
+        int n = points.Length;
+        Vector2[] path = new Vector2[n * 2];
 
-        for (int i = 0; i < points.Length; i++)
+        
+        for (int i = 0; i < n; i++)
         {
             path[i] = points[i];
         }
 
-        path[points.Length] = new Vector2(points[points.Length - 1].x, -10);
-        path[points.Length + 1] = new Vector2(points[0].x, -10);
+        
+        for (int i = 0; i < n; i++)
+        {
+            int topIndex = n - 1 - i;
+            path[n + i] = new Vector2(points[topIndex].x, bottomY);
+        }
 
         return path;
     }
@@ -124,6 +129,4 @@ public class TerrainGenerator : MonoBehaviour
         c.a = alpha;
         meshRenderer.material.color = c;
     }
-
-    
 }
